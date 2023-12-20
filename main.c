@@ -1,16 +1,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <libssh/libssh.h>
+#include "filereader.c"
 
 int main() {
+
+    char** credentials = getCredentials();
+    if (credentials == NULL) {
+        fprintf(stderr, "Error al obtener las credenciales\n");
+        return -1;
+    }
+
     ssh_session session = ssh_new();
     if (session == NULL) {
         fprintf(stderr, "Error creando la sesión SSH\n");
         return -1;
     }
 
-    ssh_options_set(session, SSH_OPTIONS_HOST, "...");
-    ssh_options_set(session, SSH_OPTIONS_USER, "Ian");
+    ssh_options_set(session, SSH_OPTIONS_HOST, credentials[0]);
+    ssh_options_set(session, SSH_OPTIONS_USER, credentials[1]);
 
     // Conectar a la sesión SSH
     if (ssh_connect(session) != SSH_OK) {
@@ -20,7 +28,7 @@ int main() {
     }
 
     // Autenticar la sesión SSH (por ejemplo, usando contraseña)
-    if (ssh_userauth_password(session, NULL, "...") != SSH_AUTH_SUCCESS) {
+    if (ssh_userauth_password(session, NULL, credentials[2]) != SSH_AUTH_SUCCESS) {
         fprintf(stderr, "Error de autenticación: %s\n", ssh_get_error(session));
         ssh_disconnect(session);
         ssh_free(session);
